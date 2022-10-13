@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ymsd.dao.CartDao">
+
+    <resultMap type="com.ymsd.entity.Cart" id="CartMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="pid" column="pid" jdbcType="INTEGER"/>
+        <result property="number" column="number" jdbcType="INTEGER"/>
+        <result property="tprice" column="ctprice"></result>
+        <!--   映射cart集合     -->
+        <result property="product.id" column="ppid"></result>
+        <result property="product.pname" column="pname"></result>
+        <result property="product.typeid" column="typeid"></result>
+        <result property="product.tprice" column="tprice"></result>
+        <result property="product.tintroduce" column="tintroduce"></result>
+        <result property="product.pimageurl" column="pimageurl"></result>
+        <result property="product.photstate" column="photstate"></result>
+        <result property="product.pdiscount" column="pdiscount"></result>
+        <result property="product.pstate" column="pstate"></result>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="CartMap">
+        select
+          id, uid, pid, number
+        from cart
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="CartMap">
+        select
+          id, uid, pid, number
+        from cart
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="pid != null">
+                and pid = #{pid}
+            </if>
+            <if test="number != null">
+                and number = #{number}
+            </if>
+        </where>
+        limit #{pageable.offset}, #{pageable.pageSize}
+    </select>
+
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from cart
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="pid != null">
+                and pid = #{pid}
+            </if>
+            <if test="number != null">
+                and number = #{number}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into cart(uid, pid, number,tprice)
+        values (#{uid}, #{pid}, #{number},#{tprice})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into cart(uid, pid, number)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.uid}, #{entity.pid}, #{entity.number})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into cart(uid, pid, number)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.uid}, #{entity.pid}, #{entity.number})
+        </foreach>
+        on duplicate key update
+        uid = values(uid),
+        pid = values(pid),
+        number = values(number)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update cart
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="pid != null">
+                pid = #{pid},
+            </if>
+            <if test="number != null">
+                number = #{number},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from cart where id = #{id}
+    </delete>
+
+    <!--  queryIdByToken  -->
+    <select id="queryIdByToken" resultType="com.ymsd.entity.User">
+        select * from user where token = #{token}
+    </select>
+
+    <!--  queryCount  -->
+    <select id="queryCount" resultType="java.lang.Long">
+        select count(id) from cart where uid = #{uid} and pid = #{pid}
+    </select>
+
+    <!--  queryCartByUid  -->
+    <select id="queryCartByUid" resultMap="CartMap">
+        SELECT
+            c.id id,
+            c.uid uid,
+            c.pid pid,
+            c.number number,
+            c.tprice ctprice,
+            p.id ppid,
+            p.pname pname,
+            p.typeid typeid,
+            p.tprice tprice,
+            p.tintroduce tintroduce,
+            p.pimageurl pimageurl,
+            p.photstate photstate,
+            p.pdiscount pdiscount,
+            p.pstate pstate
+        from cart c,product p
+        where c.pid = p.id
+        and c.uid = #{uid}
+    </select>
+
+    <!--  deleteCart  -->
+    <delete id="deleteCart">
+        delete from cart where id=#{id} and uid=#{uid}
+    </delete>
+
+    <!--  deleteCartByUid  -->
+    <delete id="deleteCartByUid">
+        delete from cart where uid = #{uid}
+    </delete>
+</mapper>
+
